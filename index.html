@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sahayak Admin Dashboard</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<style>
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --saffron-50: #FFF7ED; --saffron-100: #FFEDD5; --saffron-200: #FED7AA;
+  --saffron-400: #FB923C; --saffron-500: #F97316; --saffron-600: #EA580C;
+  --coop-50: #F0FDF4; --coop-100: #DCFCE7; --coop-500: #22C55E; --coop-600: #16A34A; --coop-700: #15803D;
+  --ink-50: #F8FAFC; --ink-100: #F1F5F9; --ink-200: #E2E8F0; --ink-300: #CBD5E1;
+  --ink-400: #94A3B8; --ink-500: #64748B; --ink-600: #475569; --ink-700: #334155;
+  --ink-800: #1E293B; --ink-900: #0F172A;
+  --blue-100: #DBEAFE; --blue-500: #3B82F6; --blue-600: #2563EB;
+  --purple-100: #F3E8FF; --purple-500: #A855F7; --purple-600: #7E22CE;
+  --pink-100: #FCE7F3; --pink-500: #EC4899;
+  --red-100: #FEE2E2; --red-500: #EF4444; --red-700: #B91C1C;
+  --yellow-100: #FEF3C7; --yellow-700: #B45309;
+  --sidebar-w: 256px;
+  --sidebar-collapsed: 80px;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 50%, #FFF7ED 100%);
+  color: var(--ink-800);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display { font-family: 'Poppins', system-ui, sans-serif; }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-wrapper {
+  flex: 1;
+  margin-left: var(--sidebar-w);
+  transition: margin-left 0.3s ease;
+  min-width: 0;
+}
+
+.main-wrapper.sidebar-collapsed {
+  margin-left: var(--sidebar-collapsed);
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+  z-index: 40;
+  transition: width 0.3s ease, transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar.collapsed { width: var(--sidebar-collapsed); }
+
+.sidebar-logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--saffron-500), var(--coop-500));
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 10px 20px rgba(249, 115, 22, 0.3);
+  flex-shrink: 0;
+  color: white;
+}
+
+.logo-text { overflow: hidden; white-space: nowrap; }
+.logo-text h1 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ink-900);
+}
+.logo-text p {
+  font-size: 10px;
+  color: var(--ink-400);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.sidebar.collapsed .logo-text { display: none; }
+
+.sidebar-nav {
+  flex: 1;
+  padding: 12px;
+  margin-top: 8px;
+  overflow-y: auto;
+}
+
+.nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 4px;
+  transition: all 0.2s;
+  position: relative;
+  background: transparent;
+  color: var(--ink-600);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.nav-item:hover {
+  background: var(--ink-100);
+  color: var(--ink-900);
+}
+
+.nav-item.active {
+  background: linear-gradient(90deg, var(--saffron-500), var(--saffron-600));
+  color: white;
+  box-shadow: 0 10px 20px rgba(249, 115, 22, 0.3);
+}
+
+.nav-item svg { flex-shrink: 0; }
+
+.sidebar.collapsed .nav-item span { display: none; }
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 10px;
+}
+
+.sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--red-500);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.logout-btn:hover { background: var(--red-100); }
+.sidebar.collapsed .logout-btn span { display: none; }
+.sidebar.collapsed .logout-btn { justify-content: center; }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.header-inner {
+  height: 100%;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header-left { display: flex; align-items: center; gap: 16px; flex: 1; }
+
+.menu-btn {
+  padding: 8px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--ink-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.menu-btn:hover { background: var(--ink-100); }
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(241, 245, 249, 0.7);
+  border-radius: 12px;
+  padding: 8px 16px;
+  max-width: 380px;
+  flex: 1;
+}
+
+.search-box input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  width: 100%;
+  color: var(--ink-800);
+  font-family: inherit;
+}
+
+.search-box input::placeholder { color: var(--ink-400); }
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+
+.icon-btn {
+  padding: 8px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  color: var(--ink-600);
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover { background: var(--ink-100); }
+
+.notification-dot {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 8px; height: 8px;
+  background: var(--red-500);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.2); }
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 12px;
+  margin-left: 8px;
+  border-left: 1px solid var(--ink-200);
+}
+
+.user-avatar {
+  width: 36px; height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--saffron-500), var(--coop-500));
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 600; font-size: 14px;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+.user-info p:first-child {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.user-info p:last-child {
+  font-size: 12px;
+  color: var(--ink-400);
+}
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+.main-content {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Glass Card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.05);
+  border-radius: 16px;
+}
+
+/* Welcome Banner */
+.welcome-banner {
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+  animation: slideUp 0.5s ease-out;
+}
+
+.welcome-banner::before {
+  content: '';
+  position: absolute;
+  top: -128px; right: -128px;
+  width: 256px; height: 256px;
+  background: radial-gradient(circle, rgba(253, 186, 116, 0.4) 0%, rgba(134, 239, 172, 0.4) 100%);
+  border-radius: 50%;
+  filter: blur(60px);
+}
+
+.welcome-banner h1 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 32px;
+  color: var(--ink-900);
+  position: relative;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--saffron-500), var(--coop-500));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.welcome-banner p {
+  color: var(--ink-500);
+  margin-top: 8px;
+  font-size: 16px;
+  position: relative;
+}
+
+.welcome-banner .highlight {
+  color: var(--saffron-600);
+  font-weight: 600;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   STAT CARDS
+   ============================================================ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover { transform: translateY(-4px); }
+
+.stat-card-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+  border-radius: 16px;
+}
+
+.stat-card:hover .stat-card-bg { opacity: 1; }
+
+.stat-gradient-1 { background: linear-gradient(135deg, #F97316 0%, #EA580C 100%); }
+.stat-gradient-2 { background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%); }
+.stat-gradient-3 { background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); }
+.stat-gradient-4 { background: linear-gradient(135deg, #A855F7 0%, #7E22CE 100%); }
+
+.stat-card-inner { position: relative; }
+
+.stat-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.stat-icon {
+  width: 48px; height: 48px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15);
+}
+
+.stat-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.stat-trend.up { background: var(--coop-100); color: var(--coop-700); }
+.stat-trend.down { background: var(--red-100); color: var(--red-700); }
+
+.stat-card-body { margin-top: 16px; }
+
+.stat-label {
+  font-size: 14px;
+  color: var(--ink-500);
+  transition: color 0.3s;
+}
+
+.stat-value {
+  font-family: 'Poppins', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink-900);
+  margin-top: 4px;
+  transition: color 0.3s;
+}
+
+.stat-card:hover .stat-label { color: rgba(255, 255, 255, 0.9); }
+.stat-card:hover .stat-value { color: white; }
+
+/* ============================================================
+   CHARTS GRID
+   ============================================================ */
+.charts-grid-2 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.charts-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.chart-card { padding: 24px; }
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chart-title {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--ink-900);
+}
+
+.chart-subtitle {
+  font-size: 12px;
+  color: var(--ink-400);
+  margin-top: 2px;
+}
+
+.chart-icon {
+  width: 36px; height: 36px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.chart-icon.saffron { background: var(--saffron-100); color: var(--saffron-600); }
+.chart-icon.coop { background: var(--coop-100); color: var(--coop-600); }
+.chart-icon.blue { background: var(--blue-100); color: var(--blue-600); }
+.chart-icon.pink { background: var(--pink-100); color: var(--pink-500); }
+
+.chart-legend {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-500);
+}
+
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+.chart-body { position: relative; height: 280px; }
+.chart-body.small { height: 220px; }
+
+/* Language list */
+.lang-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lang-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.lang-item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lang-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+.lang-name { color: var(--ink-600); }
+.lang-value { font-weight: 600; color: var(--ink-900); }
+
+/* Voice center text */
+.voice-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.voice-center .big {
+  font-family: 'Poppins', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.voice-center .small {
+  font-size: 12px;
+  color: var(--ink-400);
+}
+
+.voice-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.voice-stat {
+  text-align: center;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--ink-50);
+}
+
+.voice-stat-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-500);
+  margin-bottom: 4px;
+}
+
+.voice-stat-value {
+  font-family: 'Poppins', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+/* Impact Metrics */
+.impact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.impact-item {
+  padding: 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(248, 250, 252, 1), rgba(241, 245, 249, 1));
+}
+
+.impact-label {
+  font-size: 12px;
+  color: var(--ink-500);
+}
+
+.impact-value {
+  font-family: 'Poppins', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink-900);
+  margin-top: 4px;
+}
+
+/* ============================================================
+   GRIEVANCE TABLE
+   ============================================================ */
+.table-wrapper { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+thead tr { border-bottom: 1px solid var(--ink-200); }
+
+th {
+  text-align: left;
+  padding: 12px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+td {
+  padding: 14px 8px;
+  border-bottom: 1px solid var(--ink-100);
+  color: var(--ink-700);
+}
+
+tbody tr:hover { background: rgba(248, 250, 252, 0.5); }
+
+td.id-cell {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--saffron-600);
+  font-weight: 600;
+}
+
+td.user-cell { font-weight: 600; color: var(--ink-900); }
+td.village-cell { font-size: 13px; color: var(--ink-500); }
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-resolved { background: var(--coop-100); color: var(--coop-700); }
+.status-progress { background: var(--yellow-100); color: var(--yellow-700); }
+.status-pending { background: var(--red-100); color: var(--red-700); }
+
+.view-all-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--saffron-600);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background: var(--saffron-100);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.view-all-btn:hover { background: var(--saffron-200); }
+
+/* ============================================================
+   ACTIVITY FEED
+   ============================================================ */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.activity-item:hover { background: var(--ink-50); }
+
+.activity-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.activity-icon.query { background: var(--saffron-100); color: var(--saffron-600); }
+.activity-icon.grievance { background: var(--blue-100); color: var(--blue-600); }
+.activity-icon.resolve { background: var(--coop-100); color: var(--coop-600); }
+.activity-icon.voice { background: var(--purple-100); color: var(--purple-600); }
+
+.activity-content { flex: 1; min-width: 0; }
+
+.activity-message {
+  font-size: 13px;
+  color: var(--ink-700);
+  line-height: 1.4;
+}
+
+.activity-time {
+  font-size: 11px;
+  color: var(--ink-400);
+  margin-top: 4px;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer {
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-400);
+  padding: 24px 0;
+}
+
+.footer p:last-child { margin-top: 4px; }
+
+/* ============================================================
+   MOBILE OVERLAY
+   ============================================================ */
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 30;
+}
+
+.mobile-overlay.active { display: block; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.mobile-open { transform: translateX(0); width: var(--sidebar-w); }
+  .sidebar.mobile-open .logo-text { display: block; }
+  .sidebar.mobile-open .nav-item span { display: block; }
+  .sidebar.mobile-open .nav-item { justify-content: flex-start; padding: 10px 12px; }
+  .sidebar.mobile-open .logout-btn span { display: block; }
+  .sidebar.mobile-open .logout-btn { justify-content: flex-start; }
+
+  .main-wrapper { margin-left: 0 !important; }
+
+  .charts-grid-2, .charts-grid-3 { grid-template-columns: 1fr; }
+
+  .main-content { padding: 20px; }
+
+  .welcome-banner { padding: 24px; }
+  .welcome-banner h1 { font-size: 24px; }
+}
+
+@media (max-width: 768px) {
+  .search-box { display: none; }
+  .user-info { display: none; }
+  .header-inner { padding: 0 16px; }
+
+  .stats-grid { grid-template-columns: 1fr; }
+
+  .main-content { padding: 16px; gap: 16px; }
+
+  .chart-card { padding: 20px; }
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--ink-100); border-radius: 999px; }
+::-webkit-scrollbar-thumb { background: var(--ink-300); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-400); }
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ============ MOBILE OVERLAY ============ -->
+  <div class="mobile-overlay" id="mobileOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <i data-lucide="sparkles" style="width:20px;height:20px;"></i>
+      </div>
+      <div class="logo-text">
+        <h1>Sahayak</h1>
+        <p>Admin Panel</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn">
+        <i data-lucide="log-out" style="width:20px;height:20px;"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN WRAPPER ============ -->
+  <div class="main-wrapper" id="mainWrapper">
+
+    <!-- ============ HEADER ============ -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="header-left">
+          <button class="menu-btn" onclick="toggleSidebar()">
+            <i data-lucide="menu" style="width:20px;height:20px;"></i>
+          </button>
+          <div class="search-box">
+            <i data-lucide="search" style="width:16px;height:16px;color:#94A3B8;"></i>
+            <input type="text" placeholder="Search users, grievances, queries..." />
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button class="icon-btn">
+            <i data-lucide="bell" style="width:20px;height:20px;"></i>
+            <span class="notification-dot"></span>
+          </button>
+          <button class="icon-btn">
+            <i data-lucide="globe" style="width:20px;height:20px;"></i>
+          </button>
+          <div class="user-profile">
+            <div class="user-avatar">A</div>
+            <div class="user-info">
+              <p>Admin</p>
+              <p>Ministry of Cooperation</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main class="main-content">
+
+      <!-- Welcome Banner -->
+      <div class="glass-card welcome-banner">
+        <h1>Namaste, <span class="gradient-text">Admin</span> 🙏</h1>
+        <p>Sahayak is serving <span class="highlight">2.47 Lakh+</span> cooperative members across India in 22 languages.</p>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="stats-grid" id="statsGrid"></div>
+
+      <!-- Charts Row 1 -->
+      <div class="charts-grid-2">
+        <div class="glass-card chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Weekly Activity</div>
+              <div class="chart-subtitle">Queries vs Grievances (last 7 days)</div>
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item">
+                <span class="legend-dot" style="background:#F97316;"></span> Queries
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot" style="background:#22C55E;"></span> Grievances
+              </div>
+            </div>
+          </div>
+          <div class="chart-body">
+            <canvas id="queryChart"></canvas>
+          </div>
+        </div>
+
+        <div class="glass-card chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Language Distribution</div>
+              <div class="chart-subtitle">Users by preferred language</div>
+            </div>
+            <div class="chart-icon saffron">
+              <i data-lucide="globe" style="width:20px;height:20px;"></i>
+            </div>
+          </div>
+          <div class="chart-body small">
+            <canvas id="languageChart"></canvas>
+          </div>
+          <div class="lang-list" id="langList"></div>
+        </div>
+      </div>
+
+      <!-- Charts Row 2 -->
+      <div class="charts-grid-3">
+        <div class="glass-card chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Top Schemes</div>
+              <div class="chart-subtitle">Query distribution (%)</div>
+            </div>
+            <div class="chart-icon coop">
+              <i data-lucide="bar-chart-3" style="width:20px;height:20px;"></i>
+            </div>
+          </div>
+          <div class="chart-body small">
+            <canvas id="schemeChart"></canvas>
+          </div>
+        </div>
+
+        <div class="glass-card chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Voice vs Text</div>
+              <div class="chart-subtitle">Interaction mode split</div>
+            </div>
+            <div class="chart-icon saffron">
+              <i data-lucide="mic" style="width:20px;height:20px;"></i>
+            </div>
+          </div>
+          <div class="chart-body small" style="position:relative;">
+            <canvas id="voiceChart"></canvas>
+            <div class="voice-center">
+              <div class="big">68%</div>
+              <div class="small">Voice Usage</div>
+            </div>
+          </div>
+          <div class="voice-stats">
+            <div class="voice-stat">
+              <div class="voice-stat-label">
+                <span class="legend-dot" style="background:#F97316;"></span> Voice
+              </div>
+              <div class="voice-stat-value">68%</div>
+            </div>
+            <div class="voice-stat">
+              <div class="voice-stat-label">
+                <span class="legend-dot" style="background:#22C55E;"></span> Text
+              </div>
+              <div class="voice-stat-value">32%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Impact Metrics</div>
+              <div class="chart-subtitle">Key performance indicators</div>
+            </div>
+            <div class="chart-icon pink">
+              <i data-lucide="trending-up" style="width:20px;height:20px;"></i>
+            </div>
+          </div>
+          <div class="impact-list">
+            <div class="impact-item" style="border-left:4px solid #EC4899;">
+              <div class="impact-label">Women Empowered</div>
+              <div class="impact-value">3.6M</div>
+            </div>
+            <div class="impact-item" style="border-left:4px solid #F97316;">
+              <div class="impact-label">Farmers Reached</div>
+              <div class="impact-value">50K+</div>
+            </div>
+            <div class="impact-item" style="border-left:4px solid #22C55E;">
+              <div class="impact-label">Languages Supported</div>
+              <div class="impact-value">22+</div>
+            </div>
+            <div class="impact-item" style="border-left:4px solid #3B82F6;">
+              <div class="impact-label">Resolution Rate</div>
+              <div class="impact-value">88.7%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grievance Table + Activity -->
+      <div class="charts-grid-2">
+        <div class="glass-card chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Recent Grievances</div>
+              <div class="chart-subtitle">Latest complaints from cooperative members</div>
+            </div>
+            <button class="view-all-btn">View All</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>User</th>
+                  <th>Village</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="grievanceTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="glass-card chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Recent Activity</div>
+              <div class="chart-subtitle">Live updates from the platform</div>
+            </div>
+          </div>
+          <div class="activity-list" id="activityList"></div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <p>© 2024 Sahayak · AI-Powered Multilingual Cooperative Assistant</p>
+        <p>Ministry of Cooperation · SIH 2024</p>
+      </footer>
+
+    </main>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   DATA
+   ============================================================ */
+
+const statsData = [
+  { id: 1, label: 'Total Users', value: '2,47,893', change: '+12.5%', trend: 'up', icon: 'users', gradient: 'stat-gradient-1' },
+  { id: 2, label: 'Queries Today', value: '18,472', change: '+8.2%', trend: 'up', icon: 'message-square', gradient: 'stat-gradient-2' },
+  { id: 3, label: 'Grievances Filed', value: '3,241', change: '-4.1%', trend: 'down', icon: 'file-text', gradient: 'stat-gradient-3' },
+  { id: 4, label: 'Resolved', value: '2,876', change: '+15.3%', trend: 'up', icon: 'check-circle', gradient: 'stat-gradient-4' }
+];
+
+const menuItems = [
+  { icon: 'layout-dashboard', label: 'Dashboard', active: true },
+  { icon: 'users', label: 'Users' },
+  { icon: 'message-square', label: 'Queries' },
+  { icon: 'file-text', label: 'Grievances' },
+  { icon: 'mic', label: 'Voice Analytics' },
+  { icon: 'bar-chart-3', label: 'Reports' },
+  { icon: 'settings', label: 'Settings' },
+  { icon: 'help-circle', label: 'Help' }
+];
+
+const languageData = [
+  { language: 'Hindi', users: 68420, color: '#F97316' },
+  { language: 'Tamil', users: 42150, color: '#22C55E' },
+  { language: 'Telugu', users: 38760, color: '#3B82F6' },
+  { language: 'Bengali', users: 31240, color: '#A855F7' },
+  { language: 'Marathi', users: 27890, color: '#EC4899' },
+  { language: 'Kannada', users: 19430, color: '#EAB308' },
+  { language: 'Gujarati', users: 16280, color: '#06B6D4' },
+  { language: 'Others', users: 13723, color: '#94A3B8' }
+];
+
+const queryTrendData = {
+  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  queries: [12400, 14200, 15800, 13900, 17200, 19400, 18472],
+  grievances: [320, 410, 380, 450, 520, 610, 541]
+};
+
+const schemeData = [
+  { name: 'PMFBY', value: 32, color: '#F97316' },
+  { name: 'PACS Services', value: 24, color: '#22C55E' },
+  { name: 'Financial Literacy', value: 18, color: '#3B82F6' },
+  { name: 'Cooperative Laws', value: 14, color: '#A855F7' },
+  { name: 'Grievance', value: 12, color: '#EC4899' }
+];
+
+const grievances = [
+  { id: 'COOP2024XXXX1', user: 'Ramesh Kumar', village: 'Patna, Bihar', category: 'Dividend Not Received', status: 'Resolved', date: '2024-12-18' },
+  { id: 'COOP2024XXXX2', user: 'Lakshmi Devi', village: 'Coimbatore, TN', category: 'PMFBY Claim Delay', status: 'In Progress', date: '2024-12-18' },
+  { id: 'COOP2024XXXX3', user: 'Suresh Patil', village: 'Nashik, MH', category: 'PACS Membership Issue', status: 'Pending', date: '2024-12-17' },
+  { id: 'COOP2024XXXX4', user: 'Anita Roy', village: 'Kolkata, WB', category: 'Loan Application Rejected', status: 'Resolved', date: '2024-12-17' },
+  { id: 'COOP2024XXXX5', user: 'Venkatesh Rao', village: 'Hyderabad, TS', category: 'Crop Insurance Dispute', status: 'In Progress', date: '2024-12-16' },
+  { id: 'COOP2024XXXX6', user: 'Priya Sharma', village: 'Jaipur, RJ', category: 'Financial Literacy Query', status: 'Resolved', date: '2024-12-16' }
+];
+
+const recentActivity = [
+  { id: 1, type: 'query', message: 'Farmer from Tamil Nadu asked about PMFBY enrollment', time: '2 min ago', icon: 'message-square' },
+  { id: 2, type: 'grievance', message: 'New grievance filed: Dividend not received (Bihar)', time: '5 min ago', icon: 'file-text' },
+  { id: 3, type: 'resolve', message: 'Grievance COOP2024XXXX4 resolved by Ombudsman', time: '12 min ago', icon: 'check-circle' },
+  { id: 4, type: 'voice', message: 'Voice query in Telugu: PSL loan eligibility', time: '18 min ago', icon: 'mic' },
+  { id: 5, type: 'query', message: 'Farmer from Gujarat asked about cattle subsidy', time: '25 min ago', icon: 'message-square' }
+];
+
+/* ============================================================
+   SIDEBAR TOGGLE
+   ============================================================ */
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const mainWrapper = document.getElementById('mainWrapper');
+  const overlay = document.getElementById('mobileOverlay');
+  const isMobile = window.innerWidth <= 1024;
+
+  if (isMobile) {
+    sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('active');
+  } else {
+    sidebar.classList.toggle('collapsed');
+    mainWrapper.classList.toggle('sidebar-collapsed');
+  }
+}
+
+window.addEventListener('resize', () => {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('mobileOverlay');
+  if (window.innerWidth > 1024) {
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('active');
+  }
+});
+
+/* ============================================================
+   RENDER SIDEBAR
+   ============================================================ */
+
+function renderSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  nav.innerHTML = menuItems.map(item => `
+    <button class="nav-item ${item.active ? 'active' : ''}">
+      <i data-lucide="${item.icon}" style="width:20px;height:20px;"></i>
+      <span>${item.label}</span>
+    </button>
+  `).join('');
+}
+
+/* ============================================================
+   RENDER STATS
+   ============================================================ */
+
+function renderStats() {
+  const grid = document.getElementById('statsGrid');
+  grid.innerHTML = statsData.map(stat => `
+    <div class="glass-card stat-card">
+      <div class="stat-card-bg ${stat.gradient}"></div>
+      <div class="stat-card-inner">
+        <div class="stat-card-top">
+          <div class="stat-icon ${stat.gradient}">
+            <i data-lucide="${stat.icon}" style="width:24px;height:24px;"></i>
+          </div>
+          <div class="stat-trend ${stat.trend}">
+            <i data-lucide="${stat.trend === 'up' ? 'trending-up' : 'trending-down'}" style="width:12px;height:12px;"></i>
+            ${stat.change}
+          </div>
+        </div>
+        <div class="stat-card-body">
+          <div class="stat-label">${stat.label}</div>
+          <div class="stat-value">${stat.value}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   RENDER LANGUAGE LIST
+   ============================================================ */
+
+function renderLanguageList() {
+  const list = document.getElementById('langList');
+  list.innerHTML = languageData.slice(0, 5).map(lang => `
+    <div class="lang-item">
+      <div class="lang-item-left">
+        <span class="lang-dot" style="background:${lang.color};"></span>
+        <span class="lang-name">${lang.language}</span>
+      </div>
+      <span class="lang-value">${lang.users.toLocaleString()}</span>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   RENDER GRIEVANCE TABLE
+   ============================================================ */
+
+function renderGrievanceTable() {
+  const tbody = document.getElementById('grievanceTable');
+  const statusClass = {
+    'Resolved': 'status-resolved',
+    'In Progress': 'status-progress',
+    'Pending': 'status-pending'
+  };
+
+  tbody.innerHTML = grievances.map(g => `
+    <tr>
+      <td class="id-cell">${g.id}</td>
+      <td class="user-cell">${g.user}</td>
+      <td class="village-cell">${g.village}</td>
+      <td>${g.category}</td>
+      <td><span class="status-badge ${statusClass[g.status]}">${g.status}</span></td>
+      <td class="village-cell">${g.date}</td>
+    </tr>
+  `).join('');
+}
+
+/* ============================================================
+   RENDER ACTIVITY
+   ============================================================ */
+
+function renderActivity() {
+  const list = document.getElementById('activityList');
+  list.innerHTML = recentActivity.map(item => `
+    <div class="activity-item">
+      <div class="activity-icon ${item.type}">
+        <i data-lucide="${item.icon}" style="width:18px;height:18px;"></i>
+      </div>
+      <div class="activity-content">
+        <div class="activity-message">${item.message}</div>
+        <div class="activity-time">${item.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   CHARTS (Chart.js)
+   ============================================================ */
+
+let queryChart, languageChart, schemeChart, voiceChart;
+
+function initQueryChart() {
+  const ctx = document.getElementById('queryChart').getContext('2d');
+
+  const grad1 = ctx.createLinearGradient(0, 0, 0, 300);
+  grad1.addColorStop(0, 'rgba(249, 115, 22, 0.4)');
+  grad1.addColorStop(1, 'rgba(249, 115, 22, 0)');
+
+  const grad2 = ctx.createLinearGradient(0, 0, 0, 300);
+  grad2.addColorStop(0, 'rgba(34, 197, 94, 0.4)');
+  grad2.addColorStop(1, 'rgba(34, 197, 94, 0)');
+
+  queryChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: queryTrendData.labels,
+      datasets: [
+        {
+          label: 'Queries',
+          data: queryTrendData.queries,
+          borderColor: '#F97316',
+          backgroundColor: grad1,
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 0,
+          pointHoverRadius: 6,
+          pointHoverBackgroundColor: '#F97316',
+          pointHoverBorderColor: '#fff',
+          pointHoverBorderWidth: 3
+        },
+        {
+          label: 'Grievances',
+          data: queryTrendData.grievances,
+          borderColor: '#22C55E',
+          backgroundColor: grad2,
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 0,
+          pointHoverRadius: 6,
+          pointHoverBackgroundColor: '#22C55E',
+          pointHoverBorderColor: '#fff',
+          pointHoverBorderWidth: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(255,255,255,0.95)',
+          titleColor: '#0F172A',
+          bodyColor: '#475569',
+          borderColor: '#E2E8F0',
+          borderWidth: 1,
+          padding: 12,
+          cornerRadius: 12,
+          displayColors: true,
+          boxPadding: 6
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#94A3B8', font: { size: 12 } },
+          border: { display: false }
+        },
+        y: {
+          grid: { color: '#F1F5F9', drawBorder: false },
+          ticks: { color: '#94A3B8', font: { size: 12 } },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function initLanguageChart() {
+  const ctx = document.getElementById('languageChart').getContext('2d');
+
+  languageChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: languageData.map(l => l.language),
+      datasets: [{
+        data: languageData.map(l => l.users),
+        backgroundColor: languageData.map(l => l.color),
+        borderWidth: 0,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(255,255,255,0.95)',
+          titleColor: '#0F172A',
+          bodyColor: '#475569',
+          borderColor: '#E2E8F0',
+          borderWidth: 1,
+          padding: 12,
+          cornerRadius: 12,
+          callbacks: {
+            label: function(context) {
+              return context.label + ': ' + context.parsed.toLocaleString() + ' users';
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function initSchemeChart() {
+  const ctx = document.getElementById('schemeChart').getContext('2d');
+
+  schemeChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: schemeData.map(s => s.name),
+      datasets: [{
+        data: schemeData.map(s => s.value),
+        backgroundColor: schemeData.map(s => s.color),
+        borderRadius: 8,
+        borderSkipped: false,
+        barThickness: 24
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(255,255,255,0.95)',
+          titleColor: '#0F172A',
+          bodyColor: '#475569',
+          borderColor: '#E2E8F0',
+          borderWidth: 1,
+          padding: 12,
+          cornerRadius: 12,
+          callbacks: {
+            label: function(context) {
+              return context.parsed.x + '%';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#F1F5F9', drawBorder: false },
+          ticks: { color: '#94A3B8', font: { size: 11 } },
+          border: { display: false }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { color: '#64748B', font: { size: 11 } },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function initVoiceChart() {
+  const ctx = document.getElementById('voiceChart').getContext('2d');
+
+  voiceChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Voice', 'Text'],
+      datasets: [{
+        data: [68, 32],
+        backgroundColor: ['#F97316', '#22C55E'],
+        borderWidth: 0,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '72%',
+      rotation: -90,
+      circumference: 360,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(255,255,255,0.95)',
+          titleColor: '#0F172A',
+          bodyColor: '#475569',
+          borderColor: '#E2E8F0',
+          borderWidth: 1,
+          padding: 12,
+          cornerRadius: 12,
+          callbacks: {
+            label: function(context) {
+              return context.label + ': ' + context.parsed + '%';
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderSidebar();
+  renderStats();
+  renderLanguageList();
+  renderGrievanceTable();
+  renderActivity();
+
+  initQueryChart();
+  initLanguageChart();
+  initSchemeChart();
+  initVoiceChart();
+
+  // Initialize Lucide icons
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+});
+
+// Re-run lucide after dynamic content renders
+window.addEventListener('load', () => {
+  if (window.lucide) lucide.createIcons();
+});
+</script>
+
+</body>
+</html>
